@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { CreateArtistDto } from 'src/artist/dto/create-artist.dto';
+import { UpdateArtistDto } from 'src/artist/dto/update-artist.dto';
+import { Artist } from 'src/artist/entities/artist.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdatePasswordDto } from 'src/user/dto/update-password.dto';
 import { User } from 'src/user/entities/user.entity';
@@ -7,6 +10,7 @@ import { User } from 'src/user/entities/user.entity';
 @Injectable()
 export class StorageService {
   private users: User[] = [];
+  private artists: Artist[] = [];
 
   getAllUsers() {
     return this.users.map((user) => this.excludePassword(user));
@@ -52,5 +56,37 @@ export class StorageService {
   private excludePassword(user: User) {
     const { password, ...publicUser } = user;
     return publicUser;
+  }
+
+  addArtist(createArtistDto: CreateArtistDto) {
+    const atrist: Artist = {
+      id: randomUUID(),
+      name: createArtistDto.name,
+      grammy: createArtistDto.grammy,
+    };
+
+    this.artists.push(atrist);
+
+    return atrist;
+  }
+
+  getAllArtists() {
+    return this.artists;
+  }
+
+  getArtistById(id: string) {
+    return this.artists.find((user) => user.id === id);
+  }
+
+  updateArtist(id: string, updateArtistDto: UpdateArtistDto) {
+    const artist = this.getArtistById(id);
+    artist.name = updateArtistDto.name ?? artist.name;
+    artist.grammy = updateArtistDto.grammy ?? artist.grammy;
+
+    return artist;
+  }
+
+  removeArtist(id: string) {
+    this.artists = this.artists.filter((artist) => artist.id !== id);
   }
 }
