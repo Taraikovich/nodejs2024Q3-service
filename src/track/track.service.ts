@@ -1,26 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class TrackService {
+  constructor(private storage: StorageService) {}
+
   create(createTrackDto: CreateTrackDto) {
-    return 'This action adds a new track';
+    return this.storage.addTrack(createTrackDto);
   }
 
   findAll() {
-    return `This action returns all track`;
+    return this.storage.getAllTracks();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} track`;
+  findOne(id: string) {
+    const track = this.storage.getTrackById(id);
+    if (!track) throw new NotFoundException();
+    return track;
   }
 
-  update(id: number, updateTrackDto: UpdateTrackDto) {
-    return `This action updates a #${id} track`;
+  update(id: string, updateTrackDto: UpdateTrackDto) {
+    this.findOne(id);
+    return this.storage.updateTrack(id, updateTrackDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} track`;
+  remove(id: string) {
+    this.findOne(id);
+    this.storage.removeTrack(id);
   }
 }

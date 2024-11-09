@@ -6,6 +6,9 @@ import { Album } from 'src/album/entities/album.entity';
 import { CreateArtistDto } from 'src/artist/dto/create-artist.dto';
 import { UpdateArtistDto } from 'src/artist/dto/update-artist.dto';
 import { Artist } from 'src/artist/entities/artist.entity';
+import { CreateTrackDto } from 'src/track/dto/create-track.dto';
+import { UpdateTrackDto } from 'src/track/dto/update-track.dto';
+import { Track } from 'src/track/entities/track.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdatePasswordDto } from 'src/user/dto/update-password.dto';
 import { User } from 'src/user/entities/user.entity';
@@ -15,6 +18,7 @@ export class StorageService {
   private users: User[] = [];
   private artists: Artist[] = [];
   private albums: Album[] = [];
+  private tracks: Track[] = [];
 
   getAllUsers() {
     return this.users.map((user) => this.excludePassword(user));
@@ -92,6 +96,16 @@ export class StorageService {
 
   removeArtist(id: string) {
     this.artists = this.artists.filter((artist) => artist.id !== id);
+    this.tracks.forEach((track) => {
+      if (track.artistId === id) {
+        track.artistId = null;
+      }
+    });
+    this.albums.forEach((albums) => {
+      if (albums.artistId === id) {
+        albums.artistId = null;
+      }
+    });
   }
 
   addAlbum(createAlbumDto: CreateAlbumDto) {
@@ -114,6 +128,7 @@ export class StorageService {
   }
 
   getAlbumById(id: string) {
+    console.log(this.artists);
     return this.albums.find((user) => user.id === id);
   }
 
@@ -128,5 +143,48 @@ export class StorageService {
 
   removeAlbum(id: string) {
     this.albums = this.albums.filter((album) => album.id !== id);
+    this.tracks.forEach((track) => {
+      if (track.albumId === id) {
+        track.albumId = null;
+      }
+    });
+  }
+
+  addTrack(createTrackDto: CreateTrackDto) {
+    const { name, artistId, albumId, duration } = createTrackDto;
+
+    const track: Track = {
+      id: randomUUID(),
+      name,
+      artistId,
+      albumId,
+      duration,
+    };
+
+    this.tracks.push(track);
+
+    return track;
+  }
+
+  getAllTracks() {
+    return this.tracks;
+  }
+
+  getTrackById(id: string) {
+    return this.tracks.find((track) => track.id === id);
+  }
+
+  updateTrack(id: string, updateTrackDto: UpdateTrackDto) {
+    const track = this.getTrackById(id);
+    track.name = updateTrackDto.name ?? track.name;
+    track.artistId = updateTrackDto.artistId ?? track.artistId;
+    track.albumId = updateTrackDto.albumId ?? track.albumId;
+    track.duration = updateTrackDto.duration ?? track.duration;
+
+    return track;
+  }
+
+  removeTrack(id: string) {
+    this.tracks = this.tracks.filter((track) => track.id !== id);
   }
 }
