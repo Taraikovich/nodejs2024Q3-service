@@ -9,31 +9,31 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private storeage: StorageService) {}
+  constructor(private storage: StorageService) {}
 
   create(createUserDto: CreateUserDto) {
-    return this.storeage.addUser(createUserDto);
+    return this.storage.addUser(createUserDto);
   }
 
   findAll() {
-    return this.storeage.getAllUsers();
+    return this.storage.getAllUsers();
   }
 
   findOne(id: string) {
-    const user = this.storeage.getUserById(id);
+    const user = this.storage.getUserById(id);
     if (!user) throw new NotFoundException();
     return user;
   }
 
   updateUserPassword(id: string, updatePasswordDto: UpdatePasswordDto) {
     this.findOne(id);
-    if (this.storeage.getUserPassword(id) !== updatePasswordDto.oldPassword)
+    if (this.storage.getUserPassword(id) !== updatePasswordDto.oldPassword)
       throw new ForbiddenException('OldPassword is wrong');
-    return this.storeage.updateUserPassword(id, updatePasswordDto);
+    return this.storage.updateUserPassword(id, updatePasswordDto);
   }
 
   remove(id: string) {
     this.findOne(id);
-    this.storeage.removeUser(id);
+    this.storage.removeUser(id);
   }
 }

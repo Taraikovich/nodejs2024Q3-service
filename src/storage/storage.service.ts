@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { CreateAlbumDto } from 'src/album/dto/create-album.dto';
+import { UpdateAlbumDto } from 'src/album/dto/update-album.dto';
+import { Album } from 'src/album/entities/album.entity';
 import { CreateArtistDto } from 'src/artist/dto/create-artist.dto';
 import { UpdateArtistDto } from 'src/artist/dto/update-artist.dto';
 import { Artist } from 'src/artist/entities/artist.entity';
@@ -11,6 +14,7 @@ import { User } from 'src/user/entities/user.entity';
 export class StorageService {
   private users: User[] = [];
   private artists: Artist[] = [];
+  private albums: Album[] = [];
 
   getAllUsers() {
     return this.users.map((user) => this.excludePassword(user));
@@ -88,5 +92,41 @@ export class StorageService {
 
   removeArtist(id: string) {
     this.artists = this.artists.filter((artist) => artist.id !== id);
+  }
+
+  addAlbum(createAlbumDto: CreateAlbumDto) {
+    const { name, year, artistId } = createAlbumDto;
+
+    const album: Album = {
+      id: randomUUID(),
+      name,
+      year,
+      artistId,
+    };
+
+    this.albums.push(album);
+
+    return album;
+  }
+
+  getAllAlbums(): Album[] {
+    return this.albums;
+  }
+
+  getAlbumById(id: string) {
+    return this.albums.find((user) => user.id === id);
+  }
+
+  updateAlbum(id: string, updateAlbumDto: UpdateAlbumDto) {
+    const album = this.getAlbumById(id);
+    album.name = updateAlbumDto.name ?? album.name;
+    album.year = updateAlbumDto.year ?? album.year;
+    album.artistId = updateAlbumDto.artistId ?? album.artistId;
+
+    return album;
+  }
+
+  removeAlbum(id: string) {
+    this.albums = this.albums.filter((album) => album.id !== id);
   }
 }
