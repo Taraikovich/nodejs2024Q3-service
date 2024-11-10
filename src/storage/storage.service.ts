@@ -6,6 +6,7 @@ import { Album } from 'src/album/entities/album.entity';
 import { CreateArtistDto } from 'src/artist/dto/create-artist.dto';
 import { UpdateArtistDto } from 'src/artist/dto/update-artist.dto';
 import { Artist } from 'src/artist/entities/artist.entity';
+import { Fav } from 'src/favs/entities/fav.entity';
 import { CreateTrackDto } from 'src/track/dto/create-track.dto';
 import { UpdateTrackDto } from 'src/track/dto/update-track.dto';
 import { Track } from 'src/track/entities/track.entity';
@@ -19,6 +20,11 @@ export class StorageService {
   private artists: Artist[] = [];
   private albums: Album[] = [];
   private tracks: Track[] = [];
+  private favs: Fav = {
+    artists: [],
+    albums: [],
+    tracks: [],
+  };
 
   getAllUsers() {
     return this.users.map((user) => this.excludePassword(user));
@@ -128,7 +134,6 @@ export class StorageService {
   }
 
   getAlbumById(id: string) {
-    console.log(this.artists);
     return this.albums.find((user) => user.id === id);
   }
 
@@ -186,5 +191,63 @@ export class StorageService {
 
   removeTrack(id: string) {
     this.tracks = this.tracks.filter((track) => track.id !== id);
+  }
+
+  getFavs() {
+    return {
+      artists: this.favs.artists
+        .map((artistId) =>
+          this.artists.find((artist) => artist.id === artistId),
+        )
+        .filter((artist) => artist !== null && artist !== undefined),
+      albums: this.favs.albums
+        .map((albumId) => this.albums.find((album) => album.id === albumId))
+        .filter((album) => album !== null && album !== undefined),
+      tracks: this.favs.tracks
+        .map((trackId) => this.tracks.find((track) => track.id === trackId))
+        .filter((track) => track !== null && track !== undefined),
+    };
+  }
+
+  existsFav(rout: 'track' | 'album' | 'artist', id: string) {
+    const existsInData =
+      (rout === 'track' && this.tracks.some((track) => track.id === id)) ||
+      (rout === 'album' && this.albums.some((album) => album.id === id)) ||
+      (rout === 'artist' && this.artists.some((artist) => artist.id === id));
+
+    return existsInData;
+  }
+
+  existsInFav(rout: 'track' | 'album' | 'artist', id: string) {
+    if (rout === 'track') return this.favs.tracks.includes(id);
+    if (rout === 'album') return this.favs.albums.includes(id);
+    if (rout === 'artist') return this.favs.artists.includes(id);
+    return false;
+  }
+
+  addToFavs(rout: 'track' | 'album' | 'artist', id: string) {
+    if (rout === 'track') {
+      this.favs.tracks.push(id);
+    }
+    if (rout === 'album') {
+      this.favs.albums.push(id);
+    }
+    if (rout === 'artist') {
+      this.favs.artists.push(id);
+    }
+  }
+
+  removeFromFavs(rout: 'track' | 'album' | 'artist', id: string) {
+    if (rout === 'track') {
+      this.favs.tracks = this.favs.tracks.filter((trackId) => trackId !== id);
+    }
+    if (rout === 'album') {
+      this.favs.albums = this.favs.albums.filter((albumId) => albumId !== id);
+    }
+    if (rout === 'artist') {
+      this.favs.artists = this.favs.artists.filter(
+        (artistId) => artistId !== id,
+      );
+    }
   }
 }
