@@ -74,3 +74,20 @@ For more information, visit: https://code.visualstudio.com/docs/editor/debugging
 ### Swagger
 
 **Documentation:** {URL}/doc
+
+### Docker
+
+##### Build Images:
+
+```docker-compose build```
+##### Run the Containers:
+```docker-compose up -d```
+##### Check Running Containers:
+```docker ps```
+##### Stop Containers:
+```docker-compose down```
+
+##### Vulnerabilities scanning:
+
+```npm run scan:vulnerabilities:homelib_service```
+```npm run scan:vulnerabilities:homelib_db```
