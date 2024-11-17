@@ -2,32 +2,36 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { StorageService } from 'src/storage/storage.service';
+import { DatabaseService } from 'src/database/databse.service';
 
 @Injectable()
 export class TrackService {
-  constructor(private storage: StorageService) {}
+  constructor(
+    private storage: StorageService,
+    private database: DatabaseService,
+  ) {}
 
   create(createTrackDto: CreateTrackDto) {
-    return this.storage.addTrack(createTrackDto);
+    return this.database.addTrack(createTrackDto);
   }
 
   findAll() {
-    return this.storage.getAllTracks();
+    return this.database.getAllTracks();
   }
 
-  findOne(id: string) {
-    const track = this.storage.getTrackById(id);
+  async findOne(id: string) {
+    const track = await this.database.getTrackById(id);
     if (!track) throw new NotFoundException();
     return track;
   }
 
-  update(id: string, updateTrackDto: UpdateTrackDto) {
-    this.findOne(id);
-    return this.storage.updateTrack(id, updateTrackDto);
+  async update(id: string, updateTrackDto: UpdateTrackDto) {
+    await this.findOne(id);
+    return await this.database.updateTrack(id, updateTrackDto);
   }
 
-  remove(id: string) {
-    this.findOne(id);
-    this.storage.removeTrack(id);
+  async remove(id: string) {
+    await this.findOne(id);
+    this.database.removeTrack(id);
   }
 }

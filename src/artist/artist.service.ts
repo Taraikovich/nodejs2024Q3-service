@@ -2,32 +2,33 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { StorageService } from 'src/storage/storage.service';
+import { DatabaseService } from 'src/database/databse.service';
 
 @Injectable()
 export class ArtistService {
-  constructor(private storage: StorageService) {}
+  constructor(private database: DatabaseService) {}
 
   create(createArtistDto: CreateArtistDto) {
-    return this.storage.addArtist(createArtistDto);
+    return this.database.addArtist(createArtistDto);
   }
 
   findAll() {
-    return this.storage.getAllArtists();
+    return this.database.getAllArtists();
   }
 
-  findOne(id: string) {
-    const artist = this.storage.getArtistById(id);
+  async findOne(id: string) {
+    const artist = await this.database.getArtistById(id);
     if (!artist) throw new NotFoundException();
     return artist;
   }
 
-  update(id: string, updateArtistDto: UpdateArtistDto) {
-    this.findOne(id);
-    return this.storage.updateArtist(id, updateArtistDto);
+  async update(id: string, updateArtistDto: UpdateArtistDto) {
+    await this.findOne(id);
+    return await this.database.updateArtist(id, updateArtistDto);
   }
 
-  remove(id: string) {
-    this.findOne(id);
-    this.storage.removeArtist(id);
+  async remove(id: string) {
+    await this.findOne(id);
+    await this.database.removeArtist(id);
   }
 }

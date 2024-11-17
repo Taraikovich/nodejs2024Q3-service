@@ -2,32 +2,36 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { StorageService } from 'src/storage/storage.service';
+import { DatabaseService } from 'src/database/databse.service';
 
 @Injectable()
 export class AlbumService {
-  constructor(private storage: StorageService) {}
+  constructor(
+    private storage: StorageService,
+    private database: DatabaseService,
+  ) {}
 
   create(createAlbumDto: CreateAlbumDto) {
-    return this.storage.addAlbum(createAlbumDto);
+    return this.database.addAlbum(createAlbumDto);
   }
 
   findAll() {
-    return this.storage.getAllAlbums();
+    return this.database.getAllAlbums();
   }
 
-  findOne(id: string) {
-    const album = this.storage.getAlbumById(id);
+  async findOne(id: string) {
+    const album = await this.database.getAlbumById(id);
     if (!album) throw new NotFoundException();
     return album;
   }
 
-  update(id: string, updateAlbumDto: UpdateAlbumDto) {
-    this.findOne(id);
-    return this.storage.updateAlbum(id, updateAlbumDto);
+  async update(id: string, updateAlbumDto: UpdateAlbumDto) {
+    await this.findOne(id);
+    return this.database.updateAlbum(id, updateAlbumDto);
   }
 
-  remove(id: string) {
-    this.findOne(id);
-    this.storage.removeAlbum(id);
+  async remove(id: string) {
+    await this.findOne(id);
+    await this.database.removeAlbum(id);
   }
 }

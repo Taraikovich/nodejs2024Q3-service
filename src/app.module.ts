@@ -8,9 +8,12 @@ import { TrackModule } from './track/track.module';
 import { StorageModule } from './storage/storage.module';
 import { FavsModule } from './favs/favs.module';
 import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
+    DatabaseModule,
+    StorageModule,
     ConfigModule.forRoot({
       envFilePath: './.env',
       isGlobal: true,
@@ -19,7 +22,7 @@ import { ConfigModule } from '@nestjs/config';
     ArtistModule,
     AlbumModule,
     TrackModule,
-    StorageModule,
+
     FavsModule,
   ],
   controllers: [AppController],
