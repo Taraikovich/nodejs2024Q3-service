@@ -1,15 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
-import { StorageService } from 'src/storage/storage.service';
-import { DatabaseService } from 'src/database/databse.service';
+import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class TrackService {
-  constructor(
-    private storage: StorageService,
-    private database: DatabaseService,
-  ) {}
+  constructor(private database: DatabaseService) {}
 
   create(createTrackDto: CreateTrackDto) {
     return this.database.addTrack(createTrackDto);

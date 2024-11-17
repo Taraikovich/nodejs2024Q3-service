@@ -4,43 +4,43 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { StorageService } from 'src/storage/storage.service';
+import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class FavsService {
-  constructor(private storage: StorageService) {}
+  constructor(private database: DatabaseService) {}
 
-  findAll() {
-    return this.storage.getFavs();
+  async findAll() {
+    return await this.database.getFavs();
   }
 
-  create(rout: 'track' | 'album' | 'artist', id: string) {
+  async create(rout: 'track' | 'album' | 'artist', id: string) {
     if (!['track', 'album', 'artist'].includes(rout)) {
       throw new BadRequestException();
     }
 
-    const exists = this.storage.existsFav(rout, id);
+    const exists = await this.database.existsFav(rout, id);
 
     if (!exists) {
       throw new UnprocessableEntityException(`No ${rout} found with id ${id}`);
     }
 
-    this.storage.addToFavs(rout, id);
+    await this.database.addToFavs(rout, id);
 
     return { message: `${rout} with id ${id} has been added to favorites.` };
   }
 
-  remove(rout: 'track' | 'album' | 'artist', id: string) {
+  async remove(rout: 'track' | 'album' | 'artist', id: string) {
     if (!['track', 'album', 'artist'].includes(rout)) {
       throw new BadRequestException();
     }
 
-    const exists = this.storage.existsInFav(rout, id);
+    const exists = await this.database.existsInFav(rout, id);
 
     if (!exists) {
       throw new NotFoundException(`Favorite ${rout} with id ${id} not found.`);
     }
 
-    this.storage.removeFromFavs(rout, id);
+    await this.database.removeFromFavs(rout, id);
   }
 }

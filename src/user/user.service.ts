@@ -4,15 +4,12 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { StorageService } from 'src/storage/storage.service';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { DatabaseService } from 'src/database/databse.service';
+import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class UserService {
-  constructor(
-    private database: DatabaseService,
-  ) {}
+  constructor(private database: DatabaseService) {}
 
   create(createUserDto: CreateUserDto) {
     return this.database.addUser(createUserDto);

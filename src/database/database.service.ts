@@ -5,6 +5,7 @@ import { Album } from 'src/album/entities/album.entity';
 import { CreateArtistDto } from 'src/artist/dto/create-artist.dto';
 import { UpdateArtistDto } from 'src/artist/dto/update-artist.dto';
 import { Artist } from 'src/artist/entities/artist.entity';
+import { Fav } from 'src/favs/entities/fav.entity';
 import { CreateTrackDto } from 'src/track/dto/create-track.dto';
 import { UpdateTrackDto } from 'src/track/dto/update-track.dto';
 import { Track } from 'src/track/entities/track.entity';
@@ -19,12 +20,14 @@ export class DatabaseService {
   private artistRepository: Repository<Artist>;
   private albumRepository: Repository<Album>;
   private trackRepository: Repository<Track>;
+  private favsRepository: Repository<Fav>;
 
   constructor(private dataSource: DataSource) {
     this.userRepository = this.dataSource.getRepository(User);
     this.artistRepository = this.dataSource.getRepository(Artist);
     this.albumRepository = this.dataSource.getRepository(Album);
     this.trackRepository = dataSource.getRepository(Track);
+    this.favsRepository = this.dataSource.getRepository(Fav);
   }
 
   async addUser(createUserDto: CreateUserDto) {
@@ -35,7 +38,8 @@ export class DatabaseService {
       updatedAt: Date.now(),
     });
     const savedUser = await this.userRepository.save(user);
-    const { password, ...userWithoutPassword } = savedUser;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...userWithoutPassword } = savedUser;
 
     return userWithoutPassword;
   }
@@ -58,7 +62,8 @@ export class DatabaseService {
     user.createdAt = Number(user.createdAt);
     user.updatedAt = Date.now();
     await this.userRepository.save(user);
-    const { password, ...userWithoutPassword } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...userWithoutPassword } = user;
 
     return userWithoutPassword;
   }
@@ -97,22 +102,8 @@ export class DatabaseService {
   }
 
   async removeArtist(id: string) {
-    const tracks = await this.trackRepository.find({
-      where: { artistId: id },
-    });
-    for (const track of tracks) {
-      track.artistId = null;
-    }
-    await this.trackRepository.save(tracks);
-
-    const albums = await this.albumRepository.find({
-      where: { artistId: id },
-    });
-    for (const album of albums) {
-      album.artistId = null;
-    }
-    await this.albumRepository.save(albums);
-
+    await this.trackRepository.update({ artistId: id }, { artistId: null });
+    await this.albumRepository.update({ artistId: id }, { artistId: null });
     await this.artistRepository.delete({ id });
   }
 
@@ -138,13 +129,7 @@ export class DatabaseService {
   }
 
   async removeAlbum(id: string) {
-    const tracks = await this.trackRepository.find({
-      where: { albumId: id },
-    });
-    for (const track of tracks) {
-      track.albumId = null;
-    }
-    await this.trackRepository.save(tracks);
+    await this.trackRepository.update({ albumId: id }, { albumId: null });
     await this.albumRepository.delete({ id });
   }
 
@@ -171,5 +156,77 @@ export class DatabaseService {
 
   removeTrack(id: string) {
     this.trackRepository.delete({ id });
+  }
+
+  async getFavs() {
+    const [favs] = await this.favsRepository.find();
+    if (!favs) {
+      return { artists: [], albums: [], tracks: [] };
+    }
+
+    const artists = await Promise.all(
+      favs.artists.map((artistId) =>
+        this.artistRepository.findOneBy({ id: artistId }),
+      ),
+    );
+
+    const albums = await Promise.all(
+      favs.albums.map((albumId) =>
+        this.albumRepository.findOneBy({ id: albumId }),
+      ),
+    );
+
+    const tracks = await Promise.all(
+      favs.tracks.map((trackId) =>
+        this.trackRepository.findOneBy({ id: trackId }),
+      ),
+    );
+
+    return {
+      artists: artists.filter((artist) => artist),
+      albums: albums.filter((album) => album),
+      tracks: tracks.filter((track) => track),
+    };
+  }
+
+  async existsFav(rout: 'artist' | 'album' | 'track', id: string) {
+    const existsInData =
+      (rout === 'track' && (await this.trackRepository.findOneBy({ id }))) ||
+      (rout === 'album' && (await this.albumRepository.findOneBy({ id }))) ||
+      (rout === 'artist' && (await this.artistRepository.findOneBy({ id })));
+
+    return existsInData;
+  }
+
+  async existsInFav(rout: 'track' | 'album' | 'artist', id: string) {
+    const [fav] = await this.favsRepository.find();
+    return fav[rout + 's'].includes(id);
+  }
+
+  async addToFavs(rout: 'artist' | 'album' | 'track', id: string) {
+    let [fav] = await this.favsRepository.find();
+
+    if (!fav) {
+      fav = this.favsRepository.create({
+        id: 'favs',
+        artists: rout === 'artist' ? [id] : [],
+        albums: rout === 'album' ? [id] : [],
+        tracks: rout === 'track' ? [id] : [],
+      });
+    } else if (!fav[rout + 's'].includes(id)) {
+      fav[rout + 's'].push(id);
+    }
+
+    await this.favsRepository.save(fav);
+  }
+
+  async removeFromFavs(rout: 'artist' | 'album' | 'track', id: string) {
+    const [fav] = await this.favsRepository.find();
+
+    if (fav && fav[`${rout}s`]) {
+      fav[`${rout}s`] = fav[`${rout}s`].filter((itemId) => itemId !== id);
+
+      await this.favsRepository.save(fav);
+    }
   }
 }
