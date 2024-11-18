@@ -1,5 +1,13 @@
 # Home Library Service
 
+## Run project with docker
+
+1. git checkout postgress
+2. npm ci
+3. npm run build
+4. docker-compose up -d
+5. See http://localhost:4000/doc for API documentation
+
 ## Prerequisites
 
 - Git - [Download & Install Git](https://git-scm.com/downloads).
@@ -70,3 +78,30 @@ npm run format
 Press <kbd>F5</kbd> to debug.
 
 For more information, visit: https://code.visualstudio.com/docs/editor/debugging
+
+### Swagger
+
+**Documentation:** {URL}/doc
+
+### Docker
+
+##### Build Images:
+
+`docker-compose build`
+
+##### Run the Containers:
+
+`docker-compose up -d`
+
+##### Check Running Containers:
+
+`docker ps`
+
+##### Stop Containers:
+
+`docker-compose down`
+
+##### Vulnerabilities scanning:
+
+`npm run scan:vulnerabilities:homelib_service`
+`npm run scan:vulnerabilities:homelib_db`
