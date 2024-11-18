@@ -5,12 +5,12 @@ export class Fav {
   @PrimaryColumn()
   id: string;
 
-  @Column('simple-array')
+  @Column('text', { array: true })
   artists: string[];
 
-  @Column('simple-array')
+  @Column('text', { array: true })
   albums: string[];
 
-  @Column('simple-array')
+  @Column('text', { array: true })
   tracks: string[];
 }

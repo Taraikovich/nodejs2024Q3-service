@@ -6,16 +6,23 @@ import { ArtistModule } from './artist/artist.module';
 import { AlbumModule } from './album/album.module';
 import { TrackModule } from './track/track.module';
 import { FavsModule } from './favs/favs.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
+import typeorm from './config/typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
-    DatabaseModule,
     ConfigModule.forRoot({
-      envFilePath: './.env',
       isGlobal: true,
+      load: [typeorm],
     }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) =>
+        configService.get('typeorm'),
+    }),
+    DatabaseModule,
     UserModule,
     ArtistModule,
     AlbumModule,

@@ -20,7 +20,7 @@ services:
     restart: always
     environment:
       - PORT=${PORT}
-    command: npm run start:dev
+    command: sh -c "npm run migration:run && npm run start:dev"
 
   homelib_db:
     image: homelib_db

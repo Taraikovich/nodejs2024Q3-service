@@ -5,7 +5,9 @@ import { parse as yamlParse } from 'yaml';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { SwaggerModule } from '@nestjs/swagger';
-import { ConfigService } from '@nestjs/config';
+import { config as dotenvConfig } from 'dotenv';
+
+dotenvConfig({ path: '.env' });
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,8 +24,7 @@ async function bootstrap() {
     console.error('Error reading or parsing YAML file:', error);
   }
 
-  const configService = app.get(ConfigService);
-  const port = configService.get('PORT') || 3000;
+  const port = process.env.PORT || 3000;
 
   await app.listen(port);
 }
