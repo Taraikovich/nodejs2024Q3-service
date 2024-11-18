@@ -1,5 +1,11 @@
 # Home Library Service
 
+## Run project with docker
+
+1. docker-compose build
+2. docker-compose up -d
+3. See http://localhost:4000/doc for API documentation
+
 ## Prerequisites
 
 - Git - [Download & Install Git](https://git-scm.com/downloads).
@@ -79,15 +85,21 @@ For more information, visit: https://code.visualstudio.com/docs/editor/debugging
 
 ##### Build Images:
 
-```docker-compose build```
+`docker-compose build`
+
 ##### Run the Containers:
-```docker-compose up -d```
+
+`docker-compose up -d`
+
 ##### Check Running Containers:
-```docker ps```
+
+`docker ps`
+
 ##### Stop Containers:
-```docker-compose down```
+
+`docker-compose down`
 
 ##### Vulnerabilities scanning:
 
-```npm run scan:vulnerabilities:homelib_service```
-```npm run scan:vulnerabilities:homelib_db```
+`npm run scan:vulnerabilities:homelib_service`
+`npm run scan:vulnerabilities:homelib_db`
