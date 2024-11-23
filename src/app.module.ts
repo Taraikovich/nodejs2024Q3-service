@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -10,9 +10,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import typeorm from './config/typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MyLoggerModule } from './my-logger/my-logger.module';
+import { LoggerMiddleware } from './logger-midddleware/logger-midddleware.middleware';
+import { MyExceptionFilter } from './my-exception-filter/my-exception-filter.filter';
+import { APP_FILTER } from '@nestjs/core';
 
 @Module({
   imports: [
+    MyLoggerModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [typeorm],
@@ -30,6 +35,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     FavsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: MyExceptionFilter,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

@@ -6,11 +6,14 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { SwaggerModule } from '@nestjs/swagger';
 import { config as dotenvConfig } from 'dotenv';
+import { MyLogger } from './my-logger/my-logger.service';
 
 dotenvConfig({ path: '.env' });
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
   app.useGlobalPipes(new ValidationPipe());
 
   try {
@@ -25,7 +28,7 @@ async function bootstrap() {
   }
 
   const port = process.env.PORT || 3000;
-
+  app.useLogger(app.get(MyLogger));
   await app.listen(port);
 }
 bootstrap();
