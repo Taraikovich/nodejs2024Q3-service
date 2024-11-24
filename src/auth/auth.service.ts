@@ -2,18 +2,22 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   private userRepository: Repository<User>;
+  private saltRounds: number;
+
   constructor(private dataSource: DataSource, private jwtService: JwtService) {
     this.userRepository = this.dataSource.getRepository(User);
+    this.saltRounds = parseInt(process.env.BCRYPT_SALT || '10');
   }
 
   async signUp(username: string, pass: string) {
     const user = this.userRepository.create({
       login: username,
-      password: pass,
+      password: await bcrypt.hash(pass, this.saltRounds),
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -35,7 +39,9 @@ export class AuthService {
       throw new ForbiddenException('No user with such login!');
     }
 
-    if (user?.password !== pass) {
+    const isMatch = await bcrypt.compare(pass, user?.password);
+
+    if (!isMatch) {
       throw new ForbiddenException('Wrong password!');
     }
 

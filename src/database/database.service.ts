@@ -13,6 +13,7 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdatePasswordDto } from 'src/user/dto/update-password.dto';
 import { User } from 'src/user/entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class DatabaseService {
@@ -21,19 +22,21 @@ export class DatabaseService {
   private albumRepository: Repository<Album>;
   private trackRepository: Repository<Track>;
   private favsRepository: Repository<Fav>;
+  private saltRounds: number;
 
   constructor(private dataSource: DataSource) {
     this.userRepository = this.dataSource.getRepository(User);
     this.artistRepository = this.dataSource.getRepository(Artist);
     this.albumRepository = this.dataSource.getRepository(Album);
-    this.trackRepository = dataSource.getRepository(Track);
+    this.trackRepository = this.dataSource.getRepository(Track);
     this.favsRepository = this.dataSource.getRepository(Fav);
+    this.saltRounds = parseInt(process.env.BCRYPT_SALT || '10');
   }
 
   async addUser(createUserDto: CreateUserDto) {
     const user = this.userRepository.create({
       login: createUserDto.login,
-      password: createUserDto.password,
+      password: await bcrypt.hash(createUserDto.password, this.saltRounds),
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -58,7 +61,10 @@ export class DatabaseService {
     const user = await this.userRepository.findOne({
       where: { id },
     });
-    user.password = updatePasswordDto.newPassword;
+    user.password = await bcrypt.hash(
+      updatePasswordDto.newPassword,
+      this.saltRounds,
+    );
     user.createdAt = Number(user.createdAt);
     user.updatedAt = Date.now();
     await this.userRepository.save(user);

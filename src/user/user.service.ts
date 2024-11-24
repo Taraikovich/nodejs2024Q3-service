@@ -6,6 +6,7 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { DatabaseService } from 'src/database/database.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -28,8 +29,12 @@ export class UserService {
   async updateUserPassword(id: string, updatePasswordDto: UpdatePasswordDto) {
     await this.findOne(id);
     const currentPassword = await this.database.getUserPassword(id);
-    if (currentPassword !== updatePasswordDto.oldPassword)
-      throw new ForbiddenException('OldPassword is wrong');
+    const isMatch = await bcrypt.compare(
+      updatePasswordDto.oldPassword,
+      currentPassword,
+    );
+
+    if (!isMatch) throw new ForbiddenException('OldPassword is wrong');
     return this.database.updateUserPassword(id, updatePasswordDto);
   }
 
