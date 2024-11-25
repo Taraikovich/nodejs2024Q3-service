@@ -49,6 +49,48 @@ export class AuthService {
 
     return {
       accessToken: await this.jwtService.signAsync(payload),
+      refreshToken: await this.jwtService.signAsync(
+        { sub: user.id, type: 'refresh' },
+        { expiresIn: '7d' },
+      ),
     };
+  }
+
+  async refresh(refreshToken: string) {
+    try {
+      const verifiedToken = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_SECRET,
+      });
+
+      const { sub: userId, type } = verifiedToken;
+
+      if (type !== 'refresh') {
+        throw new ForbiddenException('User not found!');
+      }
+
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new ForbiddenException('User not found!');
+      }
+
+      const payload = { sub: user.id, username: user.login };
+
+      return {
+        accessToken: await this.jwtService.signAsync(payload),
+        refreshToken: await this.jwtService.signAsync(payload, {
+          expiresIn: '7d',
+        }),
+      };
+    } catch (err) {
+      console.error('Refresh Token Error:', err);
+      if (err.name === 'TokenExpiredError') {
+        throw new ForbiddenException('Refresh token has expired!');
+      }
+      if (err.name === 'JsonWebTokenError') {
+        throw new ForbiddenException('Invalid refresh token!');
+      }
+
+      throw new ForbiddenException('Invalid or expired refresh token!');
+    }
   }
 }

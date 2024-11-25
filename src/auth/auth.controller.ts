@@ -19,4 +19,10 @@ export class AuthController {
   signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto.login, signInDto.password);
   }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  refresh(@Body() refreshToken: { refreshToken: string }) {
+    return this.authService.refresh(refreshToken.refreshToken);
+  }
 }

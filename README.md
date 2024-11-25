@@ -2,11 +2,11 @@
 
 ## Run project with docker
 
-1. git checkout postgress
+1. git checkout logs-auth
 2. npm ci
-3. npm run build
-4. docker-compose up -d
-5. See http://localhost:4000/doc for API documentation
+3. docker-compose up -d
+4. See http://localhost:4000/doc for API documentation
+5. run npm test:auth
 
 ## Prerequisites
 
