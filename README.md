@@ -7,6 +7,7 @@
 3. docker-compose up -d
 4. See http://localhost:4000/doc for API documentation
 5. run npm test:auth
+6. See ./logs for logs
 
 ## Prerequisites
 
